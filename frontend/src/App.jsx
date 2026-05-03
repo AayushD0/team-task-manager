@@ -1,14 +1,10 @@
-import { useState } from "react";
+import axios from "axios";
+import { useState, useEffect } from "react";
 
 function App() {
 
   const [page, setPage] = useState("login");
-
-  const [tasks, setTasks] = useState([
-    { title: "Design dashboard", status: "In Progress" },
-    { title: "Setup backend", status: "Completed" }
-  ]);
-
+  const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
 
   const [projects] = useState([
@@ -16,18 +12,37 @@ function App() {
     "Client Website"
   ]);
 
+  // 🔥 FETCH TASKS FROM BACKEND
+  useEffect(() => {
+    fetchTasks();
+  }, []);
 
-  const addTask = () => {
-    if (!newTask) return;
-
-    setTasks([
-      ...tasks,
-      { title: newTask, status: "Pending" }
-    ]);
-
-    setNewTask("");
+  const fetchTasks = async () => {
+    try {
+      const res = await axios.get("https://team-task-manager-production-68a0.up.railway.app");
+      setTasks(res.data);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
+  // 🔥 ADD TASK TO DATABASE
+  const addTask = async () => {
+    if (!newTask) return;
+
+    try {
+      const res = await axios.post(
+        "https://team-task-manager-production-68a0.up.railway.app",
+        { title: newTask }
+      );
+
+      setTasks([...tasks, res.data]);
+      setNewTask("");
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
 
@@ -35,12 +50,9 @@ function App() {
 
       <h1>Team Task Manager</h1>
 
-
       {/* LOGIN */}
       {page === "login" && (
-
         <div>
-
           <h2>Login</h2>
 
           <input placeholder="Email" />
@@ -53,20 +65,18 @@ function App() {
             Login
           </button>
 
-          <p onClick={() => setPage("signup")} style={{ cursor: "pointer" }}>
+          <p
+            onClick={() => setPage("signup")}
+            style={{ cursor: "pointer" }}
+          >
             Create account
           </p>
-
         </div>
-
       )}
-
 
       {/* SIGNUP */}
       {page === "signup" && (
-
         <div>
-
           <h2>Signup</h2>
 
           <input placeholder="Name" />
@@ -81,45 +91,31 @@ function App() {
           <button onClick={() => setPage("dashboard")}>
             Signup
           </button>
-
         </div>
-
       )}
-
 
       {/* DASHBOARD */}
       {page === "dashboard" && (
-
         <div>
 
           <h2>Dashboard</h2>
 
-
           {/* PROJECTS */}
           <h3>Projects</h3>
-
           {projects.map((p, i) => (
             <div key={i} style={card}>
               {p}
             </div>
           ))}
 
-
           {/* TASKS */}
           <h3>Tasks</h3>
-
           {tasks.map((task, index) => (
-
             <div key={index} style={card}>
-
               <h4>{task.title}</h4>
-
               <p>Status: {task.status}</p>
-
             </div>
-
           ))}
-
 
           {/* ADD TASK */}
           <h3>Add Task</h3>
@@ -134,7 +130,6 @@ function App() {
             Add Task
           </button>
 
-
           <br /><br />
 
           <button onClick={() => setPage("login")}>
@@ -142,13 +137,11 @@ function App() {
           </button>
 
         </div>
-
       )}
 
     </div>
   );
 }
-
 
 const card = {
   border: "1px solid black",
